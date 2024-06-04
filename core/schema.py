@@ -1,12 +1,29 @@
 import graphene
+import graphql_jwt
 from graphene_django import DjangoObjectType
-from books.models import Book
+from books.models import Author, Book
+from django.contrib.auth.models import User
+
+
+class Mutation(graphene.ObjectType):
+    token_auth = graphql_jwt.ObtainJSONWebToken.Field()
+    verify_token = graphql_jwt.Verify.Field()
+    refresh_token = graphql_jwt.Refresh.Field()
+
+
+schema = graphene.Schema(mutation=Mutation)
 
 
 class BookType(DjangoObjectType):
     class Meta:
         model = Book
-        fields = ('id', 'title', 'description')
+        fields = ('id', 'title', 'description', 'author')
+
+
+class AuthorType(DjangoObjectType):
+    class Meta:
+        model = Author
+        fields = ('name', 'year', 'created_at', 'updated_at')
 
 
 class CreateBookMutation(graphene.Mutation):
@@ -62,6 +79,11 @@ class Query(graphene.ObjectType):
 
 
 class Mutation(graphene.ObjectType):
+    # Auth user
+    token_auth = graphql_jwt.ObtainJSONWebToken.Field()
+    verify_token = graphql_jwt.Verify.Field()
+    refresh_token = graphql_jwt.Refresh.Field()
+
     create_book = CreateBookMutation.Field()
     delete_book = DeleteBookMutation.Field()
     update_book = UpdateBookMutation.Field()
